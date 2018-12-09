@@ -107,7 +107,30 @@ function love.update(dt)
     end
 
     if gameState == "play" then
-        ball:update(dt)
+        ball:update(dt, 0, VIRTUAL_HEIGHT)
+        if ball:collides(paddle1) or
+            ball:collides(paddle2) then
+            ball:changeDirection()
+        end
+
+        -- if the ball goes past one of the paddles,
+        -- the respective player gets a point
+        -- relies on p1 being on the left and p2 
+        -- being on the right side of the screen
+        -- (again with some hard coded padding)
+        if paddle1.x > (ball.x+5) then
+            paddle2.score = paddle2.score + 1
+            gameState = "start"
+            ball = Ball((VIRTUAL_WIDTH/2) - (BALL_WIDTH/2), 
+                (VIRTUAL_HEIGHT/2) - (BALL_HEIGHT/2), 
+                BALL_WIDTH, BALL_HEIGHT)
+        elseif paddle2.x < (ball.x-5) then
+            paddle1.score = paddle1.score + 1
+            gameState = "start"
+            ball = Ball((VIRTUAL_WIDTH/2) - (BALL_WIDTH/2), 
+                (VIRTUAL_HEIGHT/2) - (BALL_HEIGHT/2), 
+                BALL_WIDTH, BALL_HEIGHT)
+        end
     end
 end
 
@@ -117,6 +140,10 @@ function love.draw()
 
     love.graphics.clear(0, 0.5, 0, 0.5)
     love.graphics.setColor(1, 1, 1, 1)
+
+    -- display FPS in lower left corner
+    love.graphics.print("FPS: " .. tostring(love.timer.getFPS()),
+        10, VIRTUAL_HEIGHT - 10)
 
     -- display scores and heading
     love.graphics.printf("Retro Pong", VIRTUAL_WIDTH/2-150, 5, 
